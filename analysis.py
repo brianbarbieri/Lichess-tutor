@@ -1,15 +1,27 @@
-import berserk
-import datetime as dt
+import requests
+import json, ndjson
 
 with open("secret.csv", "r") as r:
     data = [line.replace("\n","").split(",") for line in r.readlines()]
     username = data[0][1]
     token = data[1][1]
 
-session = berserk.TokenSession(token)
-client = berserk.Client(session=session)
+url = "https://lichess.org"
+response = requests.get(
+  f'https://lichess.org/api/games/user/{username}',
+  params={
+    "perfType" : "blitz",
+  },
+  headers={
+    'Authorization': f'Bearer {token}', # Need this or you will get a 401: Not Authorized response
+    "Accept": "application/x-ndjson"
+  }
+)
 
-start = berserk.utils.to_millis(dt.datetime(2018, 12, 8))
-end = berserk.utils.to_millis(dt.datetime(2020, 12, 9))
-games = client.games.export_by_player(username, since=start, until=end, rated=False, max=300, perf_type="blitz", moves=False, opening=True)
-print(list(games)[0])
+# Parse application/x-ndjson into list of JSON objects
+resp_json = []
+ndjson = response.content.decode().split('\n')
+
+for json_obj in ndjson:
+    if json_obj:
+        resp_json.append(json.loads(json_obj))
