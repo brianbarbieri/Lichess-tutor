@@ -46,7 +46,7 @@ def get_top_games():
                 black_games.append(game)
 
     top = 5
-    return_dict = {}
+    return_dict = {"username" : username}
     for colour, col_games in zip(["white", "black"],[white_games, black_games]):
         wins, lost, draws = [], [], []
         for game in col_games:
@@ -59,7 +59,7 @@ def get_top_games():
         # print(f"Postions when playing {colour}")
         return_dict[colour] = {}
         
-        for conc, str_conc in zip([wins, lost, draws],["winning", "lost", " playing draw"]):
+        for conc, str_conc in zip([wins, lost, draws],["win", "lost", "draw"]):
             # print(f"Postions when {str_conc}:")
             return_dict[colour][str_conc] = []
             most_common = Counter([game["opening"]["name"] for game in conc]).most_common()
