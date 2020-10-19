@@ -3,30 +3,23 @@ import json, ndjson
 from tqdm import tqdm
 from collections import Counter
 import os
-print()
 
-def get_top_games():
-    # open required token from csv file
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "secret.csv"), "r") as r:
-        data = [line.replace("\n","").split(",") for line in r.readlines()]
-        username = data[0][1]
-        token = data[1][1]
+from app.config import Config   
 
+def get_top_games(username):
     url = "https://lichess.org/api"
     print(f"Gathering data for {username}")
-    response = requests.get(
-    f'{url}/games/user/{username}',
-    params={
-        "perfType" : "blitz",
-        "rated" :  "true",
-        "opening" : "true",
-        "moves" : "false"
-    },
-    headers={
-        'Authorization': f'Bearer {token}', # need this or you will get a 401: Not Authorized response
-        "Accept": "application/x-ndjson"    # required to recieve data as ndjson format
-    }
-    )
+    response = requests.get(f'{url}/games/user/{username}',
+        params={
+            "perfType" : "blitz",
+            "rated" :  "true",
+            "opening" : "true",
+            "moves" : "false"
+        },
+        headers={
+            'Authorization': f'Bearer {Config.token}', # need this or you will get a 401: Not Authorized response
+            "Accept": "application/x-ndjson"    # required to recieve data as ndjson format
+        })
 
     # parse application/x-ndjson into list of JSON objects
     games = []
@@ -56,11 +49,9 @@ def get_top_games():
                 draws.append(game)
             else:
                 lost.append(game)
-        # print(f"Postions when playing {colour}")
         return_dict[colour] = {}
         
         for conc, str_conc in zip([wins, lost, draws],["win", "lost", "draw"]):
-            # print(f"Postions when {str_conc}:")
             return_dict[colour][str_conc] = []
             most_common = Counter([game["opening"]["name"] for game in conc]).most_common()
             most_common_percentage = [(opening[0], round(opening[1]/len(conc)*100,2)) for opening in most_common]
@@ -68,5 +59,5 @@ def get_top_games():
                 if i == top:
                     break
                 return_dict[colour][str_conc].append(opn)
-                # print(f"{opn[0]:<47}| {opn[1]:<5} %")
+    print(return_dict)
     return return_dict

@@ -1,3 +1,4 @@
 tqdm
 ndjson
 flask
+flask_wtf
