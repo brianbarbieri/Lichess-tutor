@@ -18,10 +18,17 @@ def home():
 
 @main.route("/statistics")
 def statistics():
-    from app.logic.analysis import get_top_games
-    data = request.args['username'] 
-    data = get_top_games(json.loads(data.replace("\'", "\""))["username"])
-    return render_template('statistics.html',data=data)
+    from app.logic.analysis import get_top_games, get_move_tree
+    un = request.args['username'] 
+    un = json.loads(un.replace("\'", "\""))["username"]
+    top_games = get_top_games(un)
+    move_tree = get_move_tree(un)
+    data = {
+        "username" : un,
+        "tg" : top_games,
+        "mt" : move_tree
+    }
+    return render_template('statistics.html', data=data)
 
 @main.route("/about")
 def about():

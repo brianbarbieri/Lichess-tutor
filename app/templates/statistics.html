@@ -25,7 +25,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.white.win %}
+                    {% for item in data.tg.white.win %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -46,7 +46,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.white.lost %}
+                    {% for item in data.tg.white.lost %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -67,7 +67,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.white.draw %}
+                    {% for item in data.tg.white.draw %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -106,7 +106,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.black.win %}
+                    {% for item in data.tg.black.win %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -127,7 +127,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.black.lost %}
+                    {% for item in data.tg.black.lost %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -148,7 +148,7 @@
                         </tr>
                     </thead>
                     
-                    {% for item in data.black.draw %}
+                    {% for item in data.tg.black.draw %}
                     <tr>
                         <td>
                             {{item[0]}}
@@ -161,5 +161,8 @@
                 </table>
             </div>
         </div>
+    </div>
+    <div class="container-fluid">
+        {{ data.mt }}
     </div>
 {% endblock content %}

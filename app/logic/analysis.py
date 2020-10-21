@@ -6,16 +6,11 @@ import os
 
 from app.config import Config   
 
-def get_top_games(username):
+def connect_to_API(username, params):
     url = "https://lichess.org/api"
     print(f"Gathering data for {username}")
     response = requests.get(f'{url}/games/user/{username}',
-        params={
-            "perfType" : "blitz",
-            "rated" :  "true",
-            "opening" : "true",
-            "moves" : "false"
-        },
+        params=params,
         headers={
             'Authorization': f'Bearer {Config.token}', # need this or you will get a 401: Not Authorized response
             "Accept": "application/x-ndjson"    # required to recieve data as ndjson format
@@ -28,6 +23,69 @@ def get_top_games(username):
     for json_obj in ndjson:
         if json_obj:
             games.append(json.loads(json_obj))
+    return games
+
+def get_move_tree(username):
+    from app.logic.utils import set_by_path, get_by_path
+    params={
+        "perfType" : "blitz",
+        "rated" :  "true",
+        "opening" : "true",
+        "moves" : "true"
+    }
+    games = connect_to_API(username, params)
+
+    filtered_games = []
+    for game in games:
+        if game.get("winner"):
+            unw = game.get("players").get("white").get("user").get("name")
+            unb = game.get("players").get("black").get("user").get("name")
+            if (game.get("winner") == "white" and username == unw) or (game.get("winner") == "black" and username == unb):
+                conclusion = "won"
+            else:
+                conclusion = "lost"
+        else:
+            conclusion = "tie"
+
+        
+        filtered_game = {
+            "id" : game["id"],
+            "moves" : game["moves"].split(" "),
+            "outcome" : conclusion
+        } 
+        filtered_games.append(filtered_game) 
+
+    depth = 8
+    tree = {}
+
+    # first create the move tree
+    for i in range(1, depth):
+        for game in filtered_games:
+            moves = game.get("moves")[:i]
+            if len(moves) == i: #else it will overwrite branches with short games
+                set_by_path(tree, moves, {"score" : {
+                        "won" : 0,
+                        "lost" : 0,
+                        "tie" : 0
+                }})
+
+    # fill the scores in the move tree
+    for i in range(1, depth):
+        for game in filtered_games:
+            moves = game.get("moves")[:i]
+            moves.append("score")
+            moves.append(game["outcome"])
+            set_by_path(tree, moves, get_by_path(tree, moves) + 1)
+    return tree
+
+def get_top_games(username):
+    params={
+        "perfType" : "blitz",
+        "rated" :  "true",
+        "opening" : "true",
+        "moves" : "false"
+    }
+    games = connect_to_API(username, params)
 
     # seperate games for black and white games
     white_games, black_games = [], []
@@ -39,7 +97,7 @@ def get_top_games(username):
                 black_games.append(game)
 
     top = 5
-    return_dict = {"username" : username}
+    return_dict = {}
     for colour, col_games in zip(["white", "black"],[white_games, black_games]):
         wins, lost, draws = [], [], []
         for game in col_games:
@@ -59,5 +117,4 @@ def get_top_games(username):
                 if i == top:
                     break
                 return_dict[colour][str_conc].append(opn)
-    print(return_dict)
     return return_dict
