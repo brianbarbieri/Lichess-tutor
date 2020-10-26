@@ -9,16 +9,16 @@ from app.config import Config
 def connect_to_API(username, params):
     url = "https://lichess.org/api"
     print(f"Gathering data for {username}")
-    response = requests.get(f'{url}/games/user/{username}',
+    response = requests.get(f"{url}/games/user/{username}",
         params=params,
         headers={
-            'Authorization': f'Bearer {Config.token}', # need this or you will get a 401: Not Authorized response
+            "Authorization": f"Bearer {Config.token}", # need this or you will get a 401: Not Authorized response
             "Accept": "application/x-ndjson"    # required to recieve data as ndjson format
         })
 
     # parse application/x-ndjson into list of JSON objects
     games = []
-    ndjson = response.content.decode().split('\n')
+    ndjson = response.content.decode().split("\n")
 
     for json_obj in ndjson:
         if json_obj:
@@ -26,6 +26,10 @@ def connect_to_API(username, params):
     return games
 
 def get_move_tree(username):
+    """
+    Returns move tree, which is a tree of all the moves played by the player and their ending
+    """
+
     from app.logic.utils import set_by_path, get_by_path
     params={
         "perfType" : "blitz",
@@ -36,7 +40,7 @@ def get_move_tree(username):
     games = connect_to_API(username, params)
 
     filtered_games = []
-    for game in games:
+    for game in games[:100]:
         if game.get("winner"):
             unw = game.get("players").get("white").get("user").get("name")
             unb = game.get("players").get("black").get("user").get("name")
@@ -78,7 +82,10 @@ def get_move_tree(username):
             set_by_path(tree, moves, get_by_path(tree, moves) + 1)
     return tree
 
-def get_top_games(username):
+def get_top_games(username, max_):
+    """
+    Returns the top x openings of a player for each possible ending and colour
+    """
     params={
         "perfType" : "blitz",
         "rated" :  "true",
@@ -96,7 +103,6 @@ def get_top_games(username):
             else:
                 black_games.append(game)
 
-    top = 5
     return_dict = {}
     for colour, col_games in zip(["white", "black"],[white_games, black_games]):
         wins, lost, draws = [], [], []
@@ -114,7 +120,7 @@ def get_top_games(username):
             most_common = Counter([game["opening"]["name"] for game in conc]).most_common()
             most_common_percentage = [(opening[0], round(opening[1]/len(conc)*100,2)) for opening in most_common]
             for i, opn in enumerate(most_common_percentage):
-                if i == top:
+                if i == max_:
                     break
                 return_dict[colour][str_conc].append(opn)
     return return_dict

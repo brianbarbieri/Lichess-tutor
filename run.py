@@ -3,7 +3,7 @@ from app import create_app
 
 app = create_app()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.config.update(PROPAGATE_EXCEPTIONS=False)
     app.run(debug=True)
 

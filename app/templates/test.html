@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container-md">
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="{{ url_for('static', filename='js/hbar.js') }}"></script>
+    
+        <table class="movelist">
+            <tr>
+                <th>Move</th>
+                <th>Winning percentage</th>
+                <th># of games</th>
+            </tr>
+            {% for key in data.mt %}
+            <tr class="moverow">
+                <td class='move'>{{ key }}</td>
+                <td>
+                    <div id="chart{{loop.index}}"></div>
+                    <script>
+                        var sampleData = [
+                            { label: "won", value: parseInt("{{data.mt[key]['score']['won']}}") },
+                            { label: "tie", value: parseInt("{{data.mt[key]['score']['tie']}}") },
+                            { label: "lost", value: parseInt("{{data.mt[key]['score']['lost']}}") }
+                        ] 
+                        stackedBar("#chart{{loop.index}}", sampleData)
+                    </script>
+                </td>
+                <td>-</td>
+            </tr>
+            {% endfor %} 
+        </table>
+       
+        <script src="{{ url_for('static', filename='js/statistics.js') }}"></script>   
+    </div>
+
+{% endblock content %}

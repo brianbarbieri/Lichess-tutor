@@ -78,4 +78,25 @@ body {
   .account-heading {
     font-size: 2.5rem;
   }
+
+  .chart{
+    padding-top:100px
+  }
+
+  .text-value{
+    font-size:12px;
+    fill:#fff;
+    opacity:.9
+  }
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
   
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }

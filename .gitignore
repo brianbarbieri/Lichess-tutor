@@ -1,3 +1,5 @@
 *.csv
+*.ipynb
+*.json
 .vscode
 __pycache__/
