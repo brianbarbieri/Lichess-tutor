@@ -2,7 +2,6 @@ import requests
 import json, ndjson
 from tqdm import tqdm
 from collections import Counter
-import os
 
 from app.config import Config   
 
@@ -25,7 +24,7 @@ def connect_to_API(username, params):
             games.append(json.loads(json_obj))
     return games
 
-def get_move_tree(username):
+def get_move_tree(username, depth):
     """
     Returns move tree, which is a tree of all the moves played by the player and their ending
     """
@@ -40,7 +39,7 @@ def get_move_tree(username):
     games = connect_to_API(username, params)
 
     filtered_games = []
-    for game in games[:100]:
+    for game in games:
         if game.get("winner"):
             unw = game.get("players").get("white").get("user").get("name")
             unb = game.get("players").get("black").get("user").get("name")
@@ -51,7 +50,6 @@ def get_move_tree(username):
         else:
             conclusion = "tie"
 
-        
         filtered_game = {
             "id" : game["id"],
             "moves" : game["moves"].split(" "),
@@ -59,9 +57,8 @@ def get_move_tree(username):
         } 
         filtered_games.append(filtered_game) 
 
-    depth = 8
-    tree = {}
 
+    tree = {}
     # first create the move tree
     for i in range(1, depth):
         for game in filtered_games:

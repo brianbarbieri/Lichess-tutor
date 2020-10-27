@@ -1,34 +1,74 @@
 function changeTree(){ 
-    $.getJSON('/tree_data', {
-        move: this.innerHTML.replace(/\s/g, ""),
-    }, function(data) {
-        $('.moverow').remove();
-        var i = 1;
-        for (var move in data) {
-            content = `
-            <tr class="moverow">
-                <td class='move'>${move}</td>
-                <td>
-                    <div id="chart${i}"></div>
-                    <script>
-                        var sampleData = [
-                            { label: "won", value: ${data[move]["score"]["won"]} },
-                            { label: "tie", value: ${data[move]["score"]["tie"]} },
-                            { label: "lost", value: ${data[move]["score"]["lost"]} }
-                        ] 
-                        stackedBar("#chart${i}", sampleData)
-                    </script>
-                </td>
-                <td>
-                    ${data[move]["score"]["won"] + data[move]["score"]["won"] + data[move]["score"]["won"]}
-                </td>
-            </tr>`;
-            $(".movelist").append(content);
-            i++;
-        }
-        $(".movelist").append("<script>$('.move').click(changeTree);</script>");
-    });       
+  $.getJSON('/tree_data', {
+      move: this.innerHTML.replace(/\s/g, ""),
+  }, function(data) {
+    $('.moverow').remove();
+    var i = 1;
+    for (var move in data) {
+      content = `
+      <tr class="moverow">
+          <td class='move'>${move}</td>
+          <td>
+              <div id="chart${i}"></div>
+              <script>
+                  var sampleData = [
+                      { label: "won", value: ${data[move]["score"]["won"]} },
+                      { label: "tie", value: ${data[move]["score"]["tie"]} },
+                      { label: "lost", value: ${data[move]["score"]["lost"]} }
+                  ] 
+                  stackedBar("#chart${i}", sampleData)
+              </script>
+          </td>
+          <td>
+              ${parseInt(data[move]["score"]["won"]) + parseInt(data[move]["score"]["tie"]) + parseInt(data[move]["score"]["lost"])}
+          </td>
+      </tr>`;
+      $("#movelist").append(content);
+      i++;
+    }
+  
+    sortTable();
+    if (Object.keys(data).length > 1){
+      $("#movelist").append("<script>$('.move').click(changeTree);</script>");
+    }
+  });       
 }
 
+function sortTable() {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("movelist");
+    switching = true;
+    /* Make a loop that will continue until
+    no switching has been done: */
+    while (switching) {
+      // Start by saying: no switching is done:
+      switching = false;
+      rows = table.rows;
+      /* Loop through all table rows (except the
+      first, which contains table headers): */
+      for (i = 1; i < (rows.length - 1); i++) {
+        // Start by saying there should be no switching:
+        shouldSwitch = false;
+        /* Get the two elements you want to compare,
+        one from current row and one from the next: */
+        x = rows[i].getElementsByTagName("TD")[2];
+        y = rows[i + 1].getElementsByTagName("TD")[2];
+        // Check if the two rows should switch place:
+        if (parseInt(x.innerHTML) < parseInt(y.innerHTML)) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        /* If a switch has been marked, make the switch
+        and mark that a switch has been done: */
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
 
 $('.move').click(changeTree);
+sortTable();
+

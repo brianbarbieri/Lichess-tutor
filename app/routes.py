@@ -12,7 +12,6 @@ main = Blueprint("main", __name__)
 def home():
     form = PostForm()
     if form.validate_on_submit():
-        flash(f"Account created for {form.username.data}!", "success")
         username_payload = {"username" : form.username.data}
         return redirect(url_for("main.statistics", username=username_payload))
     return render_template("home.html", form=form)
@@ -22,12 +21,13 @@ def statistics():
     from app.logic.analysis import get_top_games, get_move_tree
     un = request.args["username"] 
     un = json.loads(un.replace("\'", "\""))["username"]
-    top_games = get_top_games(un, 5)
+    top_games = get_top_games(un, max_=5)
+    move_tree = get_move_tree(un, depth=4)
     data = {
         "username" : un,
-        "tg" : top_games
+        "tg" : top_games,
+        "mt" : move_tree
     }
-    print(data)
     session['data'] = data
     return render_template("statistics.html", data=data)
 
@@ -37,10 +37,20 @@ def about():
 
 @main.route("/test")
 def test():
-    with open('app/test_data.json') as json_file:
+    from app.logic.analysis import get_move_tree
+
+    # move_tree = get_move_tree("sirsnakerb", depth=7)
+    # data = {
+    #     "username" : "sirsnakerb",
+    #     "mt" : move_tree
+    # }
+
+    with open('test.json') as json_file:
         data = json.load(json_file)
-        session['tree'] = data
-        session["location"] = ["mt"]
+
+    session.clear()
+    session['data'] = data
+    session["location"] = ["mt"]
     return render_template("test.html", data=data)
 
 @main.route("/tree_data")
@@ -50,7 +60,12 @@ def tree_data():
     moves.append(move)
     session["location"] = moves
 
-    tree = session['tree']
+    # tree = session['data']
+    with open('test.json') as json_file:
+        tree = json.load(json_file)
     branch = get_by_path(tree, moves)
+    # with open(f'{str(moves)}.json', 'w') as f:
+    #     json.dump(tree, f)   
+    # print(branch.keys(), moves)   
     branch = {key:to_keep_one(branch[key], "score") for key in branch if key != "score"}
     return(jsonify(branch))

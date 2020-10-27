@@ -3,8 +3,9 @@
     <div class="container-md">
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="{{ url_for('static', filename='js/hbar.js') }}"></script>
-    
-        <table class="movelist">
+        
+        <h1>Statistics for {{ data.username }}</h1>
+        <table id="movelist">
             <tr>
                 <th>Move</th>
                 <th>Winning percentage</th>
@@ -24,7 +25,7 @@
                         stackedBar("#chart{{loop.index}}", sampleData)
                     </script>
                 </td>
-                <td>-</td>
+                <td>{{data.mt[key]['score']['won'] + data.mt[key]['score']['tie'] + data.mt[key]['score']['lost']}}</td>
             </tr>
             {% endfor %} 
         </table>
